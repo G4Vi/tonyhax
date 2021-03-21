@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
+#include "run-shim.inc"
 #include "bios.h"
 #include "cdrom.h"
 #include "gpu.h"
@@ -17,6 +18,10 @@ extern uint8_t __ROM_START__, __ROM_END__;
 
 // Buffer right before this executable
 uint8_t * const data_buffer = (uint8_t *) 0x801FB800;
+
+// Address where to load the stack clearing function and DoExecute shim
+// We'll use the space reserved for BIOS patches
+uint8_t * const shim_addr = (uint8_t *) 0x0000DF80;
 
 // Kernel developer
 const char * const KERNEL_AUTHOR = (const char *) 0xBFC0012C;
@@ -373,7 +378,8 @@ void try_boot_cd() {
 	}
 
 	debug_write("Starting");
-	DoExecute(data_buffer, 0, 0);
+	memcpy(shim_addr, RUN_SHIM, sizeof(RUN_SHIM));
+	((void (*)(void)) shim_addr)();
 }
 
 void main() {

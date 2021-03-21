@@ -67,11 +67,6 @@ LoadExeFile:
 	li $t1, 0x42
 	j 0xA0
 
-.global DoExecute
-DoExecute:
-	li $t1, 0x43
-	j 0xA0
-
 .global init_a0_b0_c0_vectors
 init_a0_b0_c0_vectors:
 	li $t1, 0x45

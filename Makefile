@@ -12,7 +12,9 @@ LDFLAGS=-EL --gc-sections
 OBJCOPY=mips-linux-gnu-objcopy
 OBJCOPYFLAGS=-O binary
 
-SPL_HEADERS := $(wildcard *.h) orca.inc
+GEN_HEADERS := orca.inc run-shim.inc
+
+SPL_HEADERS := $(wildcard *.h) $(GEN_HEADERS)
 SPL_OBJECTS := $(patsubst %.c, %.o, $(wildcard *.c)) bios.o
 
 MCS_FILES := $(patsubst %-tpl.mcs, %.mcs, $(wildcard *-tpl.mcs))
@@ -59,7 +61,7 @@ $(RAW_FILES): $(MCS_FILES)
 	bash mcs2raw.sh $(MCS_FILES)
 
 clean:
-	$(RM) BES* BAS* $(MCS_FILES) entry-*.elf entry-*.bin secondary.elf secondary.bin *.o orca.inc save-files.zip tonyhax-*.zip
+	$(RM) BES* BAS* $(MCS_FILES) $(GEN_HEADERS) entry-*.elf entry-*.bin secondary.elf secondary.bin *.o save-files.zip tonyhax-*.zip
 
 $(PACKAGE_FILE): $(PACKAGE_CONTENTS)
 	$(RM) $(PACKAGE_FILE)
@@ -90,11 +92,22 @@ entry-%.bin: entry-%.elf
 orca.inc: orca.img
 	bash bin2h.sh ORCA_IMAGE orca.img orca.inc
 
+run-shim.inc: run-shim.bin
+	bash bin2h.sh RUN_SHIM run-shim.bin run-shim.inc
+
 secondary.elf: secondary.ld $(SPL_OBJECTS)
 	$(LD) $(LDFLAGS) -T secondary.ld $(SPL_OBJECTS) -o $@
 
 secondary.bin: secondary.elf
 	$(OBJCOPY) $(OBJCOPYFLAGS) secondary.elf secondary.bin
+
+# Execute shim
+
+run-shim.elf: run-shim.S
+	$(CC) $(CFLAGS) $^ -o $@
+
+run-shim.bin: run-shim.elf
+	$(OBJCOPY) $(OBJCOPYFLAGS) -j .text $< $@
 
 # Tonyhax secondary program loader
 tonyhax.mcs: tonyhax-tpl.mcs secondary.bin
