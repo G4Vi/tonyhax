@@ -1,7 +1,9 @@
 #include <string.h>
+#include <stdint.h>
 #include "bios.h"
 #include "debugscreen.h"
 #include "gpu.h"
+#include "crc.h"
 
 #include "datadumper.h"
 
@@ -22,12 +24,15 @@
 #define UENDY (ENDY-BLOCKSIZE)
 // END DO NOT CHANGE DIRECTLY
 
-/* doesn't check if at end of screen*/
 static inline void write_byte(const uint8_t data, struct gpu_solid_rect *filled) {
     for(uint8_t bit = 0; bit < 8; bit++) {
         filled->color = (!((data >> bit) & 1)) * 0xFFFFFF;
         gpu_draw_solid_rect(filled);
         filled->pos.x += BLOCKSIZE;
+        if(filled->pos.x == UENDX) {
+            filled->pos.x = USTARTX;
+            filled->pos.y += BLOCKSIZE;
+        }
     }
 }
 
@@ -92,7 +97,10 @@ void dump_data(void) {
         const uint16_t framedata = FRAMESIZE - 6;
         for(int i = 0; i < datacount; i += framedata) {
             const int dataleft = datacount - i;
-            uint16_t datanow = dataleft > framedata ? framedata : dataleft;
+            const uint16_t datanow = dataleft > framedata ? framedata : dataleft;
+            // this can be an unaligned load, is this a problem on real hw?
+            const uint32_t checksum = crc32(&buf[i], datanow);
+            
             // write the data size in LE
             filled.pos.x = USTARTX;
             filled.pos.y = USTARTY;
@@ -100,49 +108,19 @@ void dump_data(void) {
             write_byte(datanow >> 8, &filled);
 
             // write the data
-            
-
+            for(int j = i; j < (i+datanow); j++) {
+                write_byte(buf[j], &filled);
+            }
             
             // write checksum in LE
             filled.pos.x = UENDX - (4*8*BLOCKSIZE);
             filled.pos.y = UENDY - BLOCKSIZE;
-            uint32_t checksum = 0xDEADBEEF;
             write_byte(checksum, &filled);
             write_byte(checksum >> 8, &filled);
             write_byte(checksum >> 16, &filled);
             write_byte(checksum >> 24, &filled);      
             while(1);
         }
-       
- 
-        for(uint16_t y = 52; y < (470-8); y+=8) {
 
-            for(uint16_t x = 10; x < (630-64); x+=64) {
-                uint8_t data = 'A';
-                                
-            }
-            filled.pos.x = 10;
-            filled.pos.y += 8;
-
-        }
-        /*for (uint8_t y = 0; y < qrcode.size; y++) {
-            // Each horizontal module
-            
-            for (uint8_t x = 0; x < qrcode.size; x++) {
-                if(qrcode_getModule(&qrcode, x, y)) {
-                   gpu_draw_solid_rect(&filled);
-                }
-                filled.pos.x += BLOCKSIZE;
-                
-            }
-            filled.pos.x = 10;
-            filled.pos.y += BLOCKSIZE;            
-        }*/
-        
-      
-
- 
         while(1);
-
-
 }
