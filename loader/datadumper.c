@@ -4,6 +4,7 @@
 #include "debugscreen.h"
 #include "gpu.h"
 #include "crc.h"
+#include "util.h"
 
 #include "datadumper.h"
 
@@ -90,7 +91,21 @@ void dump_data(void) {
         // number of bytes storable
         const uint16_t FRAMESIZE  = (((UENDX-USTARTX)/BLOCKSIZE) * ((UENDY-USTARTY)/BLOCKSIZE))/ 8;
         uint8_t buf[FRAMESIZE*2];
-        memset(buf, 'A', sizeof(buf));
+        
+        //memset(buf, 'A', sizeof(buf));
+        //int32_t fd = FileOpen("bu00:BESLEM-99999TONYHAX", 0x1);
+        int32_t fd = FileOpen("bu00:BASLUS-01384DRACULA", 0x1);
+        if(fd < 0) {
+            volatile uint32_t err = GetLastError();
+            while(1);
+        }
+        delay_ds(1);
+        int32_t res = FileRead(fd, buf, sizeof(buf));
+        if(res != (int32_t)sizeof(buf)) {
+            while(1);
+        }
+        FileClose(fd); 
+
         int datacount = sizeof(buf);
         
         // number of data bytes storeable
