@@ -12,6 +12,7 @@
 #include "patcher.h"
 #include "integrity.h"
 #include "io.h"
+#include "datadumper.h"
 
 // Loading address of tonyhax, provided by the secondary.ld linker script
 extern uint8_t __BSS_START__, __BSS_END__;
@@ -302,7 +303,10 @@ void main() {
 
 	log_bios_version();
 
-	debug_write("Resetting drive");
+        dump_data();
+        while(1);
+
+	/*debug_write("Resetting drive");
 	if (!cd_drive_init()) {
 		debug_write("Reset failed");
 		return;
@@ -318,7 +322,7 @@ void main() {
 
 		debug_write("Reinitializing kernel");
 		bios_reinitialize();
-	}
+	}*/
 }
 
 void __attribute__((section(".start"))) start() {
