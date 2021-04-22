@@ -93,6 +93,10 @@ void dump_data(void) {
         uint8_t buf[FRAMESIZE*2];
         
         //memset(buf, 'A', sizeof(buf));
+
+        InitCard(0);
+        //StartCard();
+        while(1);
         //int32_t fd = FileOpen("bu00:BESLEM-99999TONYHAX", 0x1);
         int32_t fd = FileOpen("bu00:BASLUS-01384DRACULA", 0x1);
         if(fd < 0) {

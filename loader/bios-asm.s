@@ -120,6 +120,11 @@ CdInit:
 	li $t1, 0x54
 	j 0xA0
 
+.global _bu_init
+_bu_init:
+	li $t1, 0x55
+	j 0xA0
+
 .global SetConf
 SetConf:
 	li $t1, 0x9C
@@ -157,6 +162,16 @@ FileRead:
 .global FileClose
 FileClose:
 	li $t1, 0x36
+	j 0xB0
+
+.global InitCard
+InitCard:
+	li $t1, 0x4A
+	j 0xB0
+
+.global StartCard
+StartCard:
+	li $t1, 0x4B
 	j 0xB0
 
 .global GetLastError

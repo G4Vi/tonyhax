@@ -273,6 +273,8 @@ bool LoadAndExecute(const char * filename, uint32_t stack_base, uint32_t stack_o
  */
 void CdInit(void);
 
+void _bu_init(void);
+
 /**
  * (Re-)initializes kernel resources.
  *
@@ -350,6 +352,10 @@ int32_t FileRead(int32_t fd, void * dst, uint32_t length);
  * @param fd file handle
  */
 void FileClose(int32_t fd);
+
+void InitCard(int32_t pad);
+
+void StartCard(void);
 
 /**
  * Returns the error code for the last failed file operation.
